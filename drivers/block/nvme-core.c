@@ -783,6 +783,11 @@ static int nvme_submit_iod(struct nvme_queue *nvmeq, struct nvme_iod *iod,
 	cmnd->rw.slba = cpu_to_le64(nvme_block_nr(ns, blk_rq_pos(req)));
 	cmnd->rw.length = cpu_to_le16((blk_rq_bytes(req) >> ns->lba_shift) - 1);
 
+	if (cmnd->rw.opcode == nvme_cmd_read)
+		printk("nvme_submit_iod() read\n");
+	else if (cmnd->rw.opcode == nvme_cmd_write)
+		printk("nvme_submit_iod() write\n");
+
 	if (blk_integrity_rq(req)) {
 		cmnd->rw.metadata = cpu_to_le64(sg_dma_address(iod->meta_sg));
 		switch (ns->pi_type) {
@@ -958,11 +963,19 @@ static irqreturn_t nvme_irq(int irq, void *data)
 {
 	irqreturn_t result;
 	struct nvme_queue *nvmeq = data;
+
+	unsigned long in_int = in_interrupt();
+	unsigned long in_irq = in_irq();
+	char* name = nvmeq->irqname;
+
 	spin_lock(&nvmeq->q_lock);
 	nvme_process_cq(nvmeq);
 	result = nvmeq->cqe_seen ? IRQ_HANDLED : IRQ_NONE;
 	nvmeq->cqe_seen = 0;
 	spin_unlock(&nvmeq->q_lock);
+
+	printk("IRQ %lu %lu %s\n", in_int, in_irq, name);
+
 	return result;
 }
 
@@ -1754,6 +1767,8 @@ static int nvme_submit_io(struct nvme_ns *ns, struct nvme_user_io __user *uio)
 	dma_addr_t meta_dma = 0;
 	void *meta = NULL;
 	void __user *metadata;
+
+	printk("nvme_submit_io()\n");
 
 	if (copy_from_user(&io, uio, sizeof(io)))
 		return -EFAULT;

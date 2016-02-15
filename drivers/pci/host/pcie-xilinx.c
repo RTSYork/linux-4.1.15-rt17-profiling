@@ -401,6 +401,11 @@ static irqreturn_t xilinx_pcie_intr_handler(int irq, void *data)
 	struct xilinx_pcie_port *port = (struct xilinx_pcie_port *)data;
 	u32 val, mask, status, msi_data;
 
+	unsigned long in_int = in_interrupt();
+	unsigned long in_irq = in_irq();
+
+	printk("IRQ %lu %lu PCIe\n", in_int, in_irq);
+
 	/* Read interrupt decode and mask registers */
 	val = pcie_read(port, XILINX_PCIE_REG_IDR);
 	mask = pcie_read(port, XILINX_PCIE_REG_IMR);
