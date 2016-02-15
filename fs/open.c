@@ -31,7 +31,7 @@
 #include <linux/ima.h>
 #include <linux/dnotify.h>
 #include <linux/compat.h>
-
+#include <linux/profile_timers.h>
 #include "internal.h"
 
 int do_truncate(struct dentry *dentry, loff_t length, unsigned int time_attrs,
@@ -1029,6 +1029,11 @@ long do_sys_open(int dfd, const char __user *filename, int flags, umode_t mode)
 
 SYSCALL_DEFINE3(open, const char __user *, filename, int, flags, umode_t, mode)
 {
+	if (flags & O_PROFILE) {
+		init_profile_timers();
+		PROF_TIMER_STOP(PROF_TIMER0);
+	}
+
 	if (force_o_largefile())
 		flags |= O_LARGEFILE;
 
