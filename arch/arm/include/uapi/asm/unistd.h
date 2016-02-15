@@ -414,6 +414,9 @@
 #define __NR_memfd_create		(__NR_SYSCALL_BASE+385)
 #define __NR_bpf			(__NR_SYSCALL_BASE+386)
 #define __NR_execveat			(__NR_SYSCALL_BASE+387)
+#define __NR_prof_init_timers		(__NR_SYSCALL_BASE+388)
+#define __NR_prof_read			(__NR_SYSCALL_BASE+389)
+#define __NR_prof_write			(__NR_SYSCALL_BASE+390)
 
 /*
  * The following SWIs are ARM private.
