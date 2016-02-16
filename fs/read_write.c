@@ -566,10 +566,6 @@ SYSCALL_DEFINE3(read, unsigned int, fd, char __user *, buf, size_t, count)
 	struct fd f = fdget_pos(fd);
 	ssize_t ret = -EBADF;
 
-	if (f.file->f_flags & O_PROFILE) {
-		PROF_TIMER_STOP(PROF_TIMER2);
-	}
-
 	if (f.file) {
 		loff_t pos = file_pos_read(f.file);
 		ret = vfs_read(f.file, buf, count, &pos);
@@ -585,10 +581,6 @@ SYSCALL_DEFINE3(write, unsigned int, fd, const char __user *, buf,
 {
 	struct fd f = fdget_pos(fd);
 	ssize_t ret = -EBADF;
-
-	if (f.file->f_flags & O_PROFILE) {
-		PROF_TIMER_STOP(PROF_TIMER3); // Stop timer 3
-	}
 
 	if (f.file) {
 		loff_t pos = file_pos_read(f.file);
@@ -606,6 +598,8 @@ SYSCALL_DEFINE3(prof_read, unsigned int, fd, char __user *, buf, size_t, count)
 	struct fd f = fdget_pos(fd);
 	ssize_t ret = -EBADF;
 
+	PROF_TIMER_STOP(PROF_TIMER2);
+
 	if (f.file) {
 		loff_t pos = file_pos_read(f.file);
 		ret = vfs_read(f.file, buf, count, &pos);
@@ -621,6 +615,8 @@ SYSCALL_DEFINE3(prof_write, unsigned int, fd, const char __user *, buf,
 {
 	struct fd f = fdget_pos(fd);
 	ssize_t ret = -EBADF;
+
+	PROF_TIMER_STOP(PROF_TIMER3);
 
 	if (f.file) {
 		loff_t pos = file_pos_read(f.file);
