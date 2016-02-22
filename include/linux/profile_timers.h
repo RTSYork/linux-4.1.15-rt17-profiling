@@ -32,7 +32,7 @@ extern void *profile_timers_base;
 
 void init_profile_timers(void);
 
-#define PROF_TIMER_SET(x, y) iowrite32(y, profile_timers_base + x);
+#define PROF_TIMER_SET(x, y) if (profile_timers_base) {iowrite32(y, profile_timers_base + x);}
 #define PROF_TIMER_START(x) PROF_TIMER_SET(x, PROF_TIMER_START_COMM)
 #define PROF_TIMER_STOP(x) PROF_TIMER_SET(x, PROF_TIMER_STOP_COMM)
 
