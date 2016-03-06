@@ -42,6 +42,8 @@
 #include <scsi/sg.h>
 #include <asm-generic/io-64-nonatomic-lo-hi.h>
 
+#include <linux/profile_timers.h>
+
 #define NVME_MINORS		(1U << MINORBITS)
 #define NVME_Q_DEPTH		1024
 #define NVME_AQ_DEPTH		256
@@ -807,6 +809,8 @@ static int nvme_submit_iod(struct nvme_queue *nvmeq, struct nvme_iod *iod,
 		nvmeq->sq_tail = 0;
 	writel(nvmeq->sq_tail, nvmeq->q_db);
 
+	PROF_TIMER_STOP(PROF_TIMER03);
+
 	return 0;
 }
 
@@ -958,6 +962,9 @@ static irqreturn_t nvme_irq(int irq, void *data)
 {
 	irqreturn_t result;
 	struct nvme_queue *nvmeq = data;
+
+	PROF_TIMER_STOP(PROF_TIMER05);
+
 	spin_lock(&nvmeq->q_lock);
 	nvme_process_cq(nvmeq);
 	result = nvmeq->cqe_seen ? IRQ_HANDLED : IRQ_NONE;

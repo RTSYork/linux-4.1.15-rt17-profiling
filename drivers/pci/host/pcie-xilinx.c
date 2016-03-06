@@ -27,6 +27,8 @@
 #include <linux/pci.h>
 #include <linux/platform_device.h>
 
+#include <linux/profile_timers.h>
+
 /* Register definitions */
 #define XILINX_PCIE_REG_BIR		0x00000130
 #define XILINX_PCIE_REG_IDR		0x00000138
@@ -400,6 +402,8 @@ static irqreturn_t xilinx_pcie_intr_handler(int irq, void *data)
 {
 	struct xilinx_pcie_port *port = (struct xilinx_pcie_port *)data;
 	u32 val, mask, status, msi_data;
+
+	PROF_TIMER_STOP(PROF_TIMER04);
 
 	/* Read interrupt decode and mask registers */
 	val = pcie_read(port, XILINX_PCIE_REG_IDR);

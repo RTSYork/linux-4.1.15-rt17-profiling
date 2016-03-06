@@ -598,7 +598,7 @@ SYSCALL_DEFINE3(prof_read, unsigned int, fd, char __user *, buf, size_t, count)
 	struct fd f = fdget_pos(fd);
 	ssize_t ret = -EBADF;
 
-	PROF_TIMER_STOP(PROF_TIMER2);
+	PROF_TIMER_STOP(PROF_TIMER02);
 
 	if (f.file) {
 		loff_t pos = file_pos_read(f.file);
@@ -607,6 +607,9 @@ SYSCALL_DEFINE3(prof_read, unsigned int, fd, char __user *, buf, size_t, count)
 			file_pos_write(f.file, pos);
 		fdput_pos(f);
 	}
+
+	PROF_TIMER_STOP(PROF_TIMER06);
+
 	return ret;
 }
 
@@ -615,8 +618,6 @@ SYSCALL_DEFINE3(prof_write, unsigned int, fd, const char __user *, buf,
 {
 	struct fd f = fdget_pos(fd);
 	ssize_t ret = -EBADF;
-
-	PROF_TIMER_STOP(PROF_TIMER3);
 
 	if (f.file) {
 		loff_t pos = file_pos_read(f.file);
