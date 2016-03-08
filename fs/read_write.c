@@ -599,6 +599,7 @@ SYSCALL_DEFINE3(prof_read, unsigned int, fd, char __user *, buf, size_t, count)
 	ssize_t ret = -EBADF;
 
 	PROF_TIMER_STOP(PROF_TIMER02);
+	PROF_TAG(2);
 
 	if (f.file) {
 		loff_t pos = file_pos_read(f.file);
@@ -609,6 +610,7 @@ SYSCALL_DEFINE3(prof_read, unsigned int, fd, char __user *, buf, size_t, count)
 	}
 
 	PROF_TIMER_STOP(PROF_TIMER06);
+	PROF_TAG(6);
 
 	return ret;
 }

@@ -810,6 +810,7 @@ static int nvme_submit_iod(struct nvme_queue *nvmeq, struct nvme_iod *iod,
 	writel(nvmeq->sq_tail, nvmeq->q_db);
 
 	PROF_TIMER_STOP(PROF_TIMER03);
+	PROF_TAG(3);
 
 	return 0;
 }
@@ -964,6 +965,7 @@ static irqreturn_t nvme_irq(int irq, void *data)
 	struct nvme_queue *nvmeq = data;
 
 	PROF_TIMER_STOP(PROF_TIMER05);
+	PROF_TAG(5);
 
 	spin_lock(&nvmeq->q_lock);
 	nvme_process_cq(nvmeq);
