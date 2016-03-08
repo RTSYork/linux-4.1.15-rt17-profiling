@@ -6,7 +6,7 @@
 extern void *profile_timers_base;
 
 #define PROF_TIMERS_BASE 0x50000000
-#define PROF_TIMERS_LENGTH 0x6000
+#define PROF_TIMERS_LENGTH 0x8000
 
 #define PROF_TIMER_START_COMM 0x00000080
 #define PROF_TIMER_STOP_COMM 0x00000000
@@ -48,10 +48,16 @@ extern void *profile_timers_base;
 #define PROF_TLR11   0x5014
 #define PROF_TCR11   0x5018
 
+#define PROF_CTRL       0x7000
+#define PROF_TAG_IN     0x7018
+#define PROF_CTRL_START 1
+
 void init_profile_timers(void);
 
 #define PROF_TIMER_SET(x, y) if (profile_timers_base) {iowrite32(y, profile_timers_base + x);}
 #define PROF_TIMER_START(x) PROF_TIMER_SET(x, PROF_TIMER_START_COMM)
 #define PROF_TIMER_STOP(x) PROF_TIMER_SET(x, PROF_TIMER_STOP_COMM)
+
+#define PROF_TAG(x) if (profile_timers_base) {iowrite32(x, profile_timers_base + PROF_TAG_IN); iowrite32(PROF_CTRL_START, profile_timers_base + PROF_CTRL);}
 
 #endif /* __PROFILE_TIMER_H__ */
