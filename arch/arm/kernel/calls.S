@@ -397,7 +397,7 @@
 /* 385 */	CALL(sys_memfd_create)
 		CALL(sys_bpf)
 		CALL(sys_execveat)
-		CALL(sys_prof_init_timers)
+		CALL(sys_prof_timers_control)
 		CALL(sys_prof_read)
 		CALL(sys_prof_write)
 #ifndef syscalls_counted
