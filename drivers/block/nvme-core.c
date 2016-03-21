@@ -809,8 +809,7 @@ static int nvme_submit_iod(struct nvme_queue *nvmeq, struct nvme_iod *iod,
 		nvmeq->sq_tail = 0;
 	writel(nvmeq->sq_tail, nvmeq->q_db);
 
-	PROF_TIMER_STOP(PROF_TIMER03);
-	PROF_TAG(3);
+	PROF_TAG((((__u32)cmnd->rw.length) << 8) | 0x40 | cmnd->rw.opcode);
 
 	return 0;
 }
@@ -824,6 +823,8 @@ static int nvme_queue_rq(struct blk_mq_hw_ctx *hctx,
 	struct nvme_cmd_info *cmd = blk_mq_rq_to_pdu(req);
 	struct nvme_iod *iod;
 	enum dma_data_direction dma_dir;
+
+	PROF_TAG(7);
 
 	/*
 	 * If formated with metadata, require the block layer provide a buffer
@@ -964,14 +965,17 @@ static irqreturn_t nvme_irq(int irq, void *data)
 	irqreturn_t result;
 	struct nvme_queue *nvmeq = data;
 
-	PROF_TIMER_STOP(PROF_TIMER05);
 	PROF_TAG(5);
 
 	spin_lock(&nvmeq->q_lock);
+	PROF_TAG(9);
 	nvme_process_cq(nvmeq);
 	result = nvmeq->cqe_seen ? IRQ_HANDLED : IRQ_NONE;
 	nvmeq->cqe_seen = 0;
 	spin_unlock(&nvmeq->q_lock);
+
+	PROF_TAG(8);
+
 	return result;
 }
 

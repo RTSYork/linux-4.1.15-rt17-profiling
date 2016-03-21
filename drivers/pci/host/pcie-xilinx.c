@@ -403,8 +403,7 @@ static irqreturn_t xilinx_pcie_intr_handler(int irq, void *data)
 	struct xilinx_pcie_port *port = (struct xilinx_pcie_port *)data;
 	u32 val, mask, status, msi_data;
 
-	PROF_TIMER_STOP(PROF_TIMER04);
-	PROF_TAG(4);
+	PROF_TAG(3);
 
 	/* Read interrupt decode and mask registers */
 	val = pcie_read(port, XILINX_PCIE_REG_IDR);

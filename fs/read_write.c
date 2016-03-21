@@ -454,6 +454,7 @@ ssize_t vfs_read(struct file *file, char __user *buf, size_t count, loff_t *pos)
 	if (ret >= 0) {
 		count = ret;
 		ret = __vfs_read(file, buf, count, pos);
+		PROF_TAG(((__u32)ret << 8) | 10);
 		if (ret > 0) {
 			fsnotify_access(file);
 			add_rchar(current, ret);
@@ -598,8 +599,7 @@ SYSCALL_DEFINE3(prof_read, unsigned int, fd, char __user *, buf, size_t, count)
 	struct fd f = fdget_pos(fd);
 	ssize_t ret = -EBADF;
 
-	PROF_TIMER_STOP(PROF_TIMER02);
-	PROF_TAG(2);
+	PROF_TAG(1);
 
 	if (f.file) {
 		loff_t pos = file_pos_read(f.file);
@@ -609,8 +609,7 @@ SYSCALL_DEFINE3(prof_read, unsigned int, fd, char __user *, buf, size_t, count)
 		fdput_pos(f);
 	}
 
-	PROF_TIMER_STOP(PROF_TIMER06);
-	PROF_TAG(6);
+	PROF_TAG(2);
 
 	return ret;
 }
