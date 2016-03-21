@@ -810,6 +810,8 @@ static int nvme_submit_iod(struct nvme_queue *nvmeq, struct nvme_iod *iod,
 	writel(nvmeq->sq_tail, nvmeq->q_db);
 
 	PROF_TAG((((__u32)cmnd->rw.length) << 8) | 0x40 | cmnd->rw.opcode);
+	if (prof_timers_enabled)
+		printk("slba %c %llu\n", (rq_data_dir(req) ? 'w' : 'r'), cmnd->rw.slba);
 
 	return 0;
 }
