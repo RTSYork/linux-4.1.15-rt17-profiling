@@ -410,8 +410,10 @@ static irqreturn_t xilinx_pcie_intr_handler(int irq, void *data)
 	mask = pcie_read(port, XILINX_PCIE_REG_IMR);
 
 	status = val & mask;
-	if (!status)
+	if (!status) {
+		PROF_TAG(0x0d);
 		return IRQ_NONE;
+	}
 
 	if (status & XILINX_PCIE_INTR_LINK_DOWN)
 		dev_warn(port->dev, "Link Down\n");
@@ -519,6 +521,8 @@ static irqreturn_t xilinx_pcie_intr_handler(int irq, void *data)
 
 	/* Clear the Interrupt Decode register */
 	pcie_write(port, status, XILINX_PCIE_REG_IDR);
+
+	PROF_TAG(0x0d);
 
 	return IRQ_HANDLED;
 }
