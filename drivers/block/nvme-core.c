@@ -42,6 +42,8 @@
 #include <scsi/sg.h>
 #include <asm-generic/io-64-nonatomic-lo-hi.h>
 
+#include <linux/profile_timers.h>
+
 #define NVME_MINORS		(1U << MINORBITS)
 #define NVME_Q_DEPTH		1024
 #define NVME_AQ_DEPTH		256
@@ -619,6 +621,7 @@ static void req_completion(struct nvme_queue *nvmeq, void *ctx,
 	if (iod->nents) {
 		dma_unmap_sg(&nvmeq->dev->pci_dev->dev, iod->sg, iod->nents,
 			rq_data_dir(req) ? DMA_TO_DEVICE : DMA_FROM_DEVICE);
+		PROF_TAG(0x10);
 		if (blk_integrity_rq(req)) {
 			if (!rq_data_dir(req))
 				nvme_dif_remap(req, nvme_dif_complete);
@@ -764,6 +767,8 @@ static int nvme_submit_iod(struct nvme_queue *nvmeq, struct nvme_iod *iod,
 	u16 control = 0;
 	u32 dsmgmt = 0;
 
+	PROF_TAG(0x0e);
+
 	if (req->cmd_flags & REQ_FUA)
 		control |= NVME_RW_FUA;
 	if (req->cmd_flags & (REQ_FAILFAST_DEV | REQ_RAHEAD))
@@ -807,6 +812,8 @@ static int nvme_submit_iod(struct nvme_queue *nvmeq, struct nvme_iod *iod,
 		nvmeq->sq_tail = 0;
 	writel(nvmeq->sq_tail, nvmeq->q_db);
 
+	PROF_TAG((((__u32)cmnd->rw.length) << 8) | 0x40 | cmnd->rw.opcode);
+
 	return 0;
 }
 
@@ -820,6 +827,8 @@ static int nvme_queue_rq(struct blk_mq_hw_ctx *hctx,
 	struct nvme_iod *iod;
 	enum dma_data_direction dma_dir;
 
+	PROF_TAG(7);
+
 	/*
 	 * If formated with metadata, require the block layer provide a buffer
 	 * unless this namespace is formated such that the metadata can be
@@ -829,13 +838,16 @@ static int nvme_queue_rq(struct blk_mq_hw_ctx *hctx,
 		if (!(ns->pi_type && ns->ms == 8)) {
 			req->errors = -EFAULT;
 			blk_mq_complete_request(req);
+			PROF_TAG(0x0f);
 			return BLK_MQ_RQ_QUEUE_OK;
 		}
 	}
 
 	iod = nvme_alloc_iod(req, ns->dev, GFP_ATOMIC);
-	if (!iod)
+	if (!iod) {
+		PROF_TAG(0x0f);
 		return BLK_MQ_RQ_QUEUE_BUSY;
+	}
 
 	if (req->cmd_flags & REQ_DISCARD) {
 		void *range;
@@ -896,13 +908,16 @@ static int nvme_queue_rq(struct blk_mq_hw_ctx *hctx,
 
 	nvme_process_cq(nvmeq);
 	spin_unlock_irq(&nvmeq->q_lock);
+	PROF_TAG(0x0f);
 	return BLK_MQ_RQ_QUEUE_OK;
 
  error_cmd:
 	nvme_free_iod(nvmeq->dev, iod);
+	PROF_TAG(0x0f);
 	return BLK_MQ_RQ_QUEUE_ERROR;
  retry_cmd:
 	nvme_free_iod(nvmeq->dev, iod);
+	PROF_TAG(0x0f);
 	return BLK_MQ_RQ_QUEUE_BUSY;
 }
 
@@ -958,11 +973,18 @@ static irqreturn_t nvme_irq(int irq, void *data)
 {
 	irqreturn_t result;
 	struct nvme_queue *nvmeq = data;
+
+	PROF_TAG(5);
+
 	spin_lock(&nvmeq->q_lock);
+	PROF_TAG(9);
 	nvme_process_cq(nvmeq);
 	result = nvmeq->cqe_seen ? IRQ_HANDLED : IRQ_NONE;
 	nvmeq->cqe_seen = 0;
 	spin_unlock(&nvmeq->q_lock);
+
+	PROF_TAG(8);
+
 	return result;
 }
 

@@ -22,6 +22,8 @@
 #include <asm/current.h>
 #include <asm/page.h>
 
+#include <linux/profile_timers.h>
+
 static int
 pin_page_for_write(const void __user *_addr, pte_t **ptep, spinlock_t **ptlp)
 {

@@ -27,6 +27,8 @@
 #include <linux/pci.h>
 #include <linux/platform_device.h>
 
+#include <linux/profile_timers.h>
+
 /* Register definitions */
 #define XILINX_PCIE_REG_BIR		0x00000130
 #define XILINX_PCIE_REG_IDR		0x00000138
@@ -401,13 +403,17 @@ static irqreturn_t xilinx_pcie_intr_handler(int irq, void *data)
 	struct xilinx_pcie_port *port = (struct xilinx_pcie_port *)data;
 	u32 val, mask, status, msi_data;
 
+	PROF_TAG(3);
+
 	/* Read interrupt decode and mask registers */
 	val = pcie_read(port, XILINX_PCIE_REG_IDR);
 	mask = pcie_read(port, XILINX_PCIE_REG_IMR);
 
 	status = val & mask;
-	if (!status)
+	if (!status) {
+		PROF_TAG(0x0d);
 		return IRQ_NONE;
+	}
 
 	if (status & XILINX_PCIE_INTR_LINK_DOWN)
 		dev_warn(port->dev, "Link Down\n");
@@ -515,6 +521,8 @@ static irqreturn_t xilinx_pcie_intr_handler(int irq, void *data)
 
 	/* Clear the Interrupt Decode register */
 	pcie_write(port, status, XILINX_PCIE_REG_IDR);
+
+	PROF_TAG(0x0d);
 
 	return IRQ_HANDLED;
 }

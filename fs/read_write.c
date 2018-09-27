@@ -21,6 +21,8 @@
 #include <asm/uaccess.h>
 #include <asm/unistd.h>
 
+#include <linux/profile_timers.h>
+
 typedef ssize_t (*io_fn_t)(struct file *, char __user *, size_t, loff_t *);
 typedef ssize_t (*iter_fn_t)(struct kiocb *, struct iov_iter *);
 
@@ -596,6 +598,8 @@ SYSCALL_DEFINE3(prof_read, unsigned int, fd, char __user *, buf, size_t, count)
 	struct fd f = fdget_pos(fd);
 	ssize_t ret = -EBADF;
 
+	PROF_TAG(0x01);
+
 	if (f.file) {
 		loff_t pos = file_pos_read(f.file);
 		ret = vfs_read(f.file, buf, count, &pos);
@@ -603,6 +607,9 @@ SYSCALL_DEFINE3(prof_read, unsigned int, fd, char __user *, buf, size_t, count)
 			file_pos_write(f.file, pos);
 		fdput_pos(f);
 	}
+
+	PROF_TAG(((__u32)ret << 8) | 0x02);
+
 	return ret;
 }
 
@@ -612,6 +619,8 @@ SYSCALL_DEFINE3(prof_write, unsigned int, fd, const char __user *, buf,
 	struct fd f = fdget_pos(fd);
 	ssize_t ret = -EBADF;
 
+	PROF_TAG(0x13);
+
 	if (f.file) {
 		loff_t pos = file_pos_read(f.file);
 		ret = vfs_write(f.file, buf, count, &pos);
@@ -619,6 +628,8 @@ SYSCALL_DEFINE3(prof_write, unsigned int, fd, const char __user *, buf,
 			file_pos_write(f.file, pos);
 		fdput_pos(f);
 	}
+
+	PROF_TAG(((__u32)ret << 8) | 0x14);
 
 	return ret;
 }
